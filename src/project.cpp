@@ -32,6 +32,7 @@ void drawLines(Mat &img) {
       Point2f prev = (*line_cur)[i-1];
       Point2f cur = (*line_cur)[i];
       line(img, prev, cur, CV_RGB(0, 0, 0));
+      std::cout<< "drew line from (" << prev.x<<","<<prev.y<<") to (" <<cur.x<< "," <<cur.y<<")"<<std::endl;
     }
   }
 }
@@ -59,7 +60,30 @@ void removeDuplicates(std::vector<DMatch> &matches) {
   }
 }
 
-void 
+//void testDrawLines(Mat &img) {
+//  std::vector<Point2f> *line1 = new std::vector<Point2f>;
+//  std::vector<Point2f> *line2 = new std::vector<Point2f>;
+//  std::vector<Point2f> *line3 = new std::vector<Point2f>;
+//  std::vector<Point2f> *line4 = new std::vector<Point2f>;
+//  for (int i=0; i<50; i++) {
+//    Point2f point1(i*5, i*5);
+//    line1->push_back(point1);
+//    Point2f point2(200 - i, 200 - (2*i));
+//    line2->push_back(point2);
+//    Point2f point3(50 + i, 200 - i);
+//    line3->push_back(point3);
+//  }
+//  lines.push_back(line1);
+//  lines.push_back(line2);
+//  lines.push_back(line3);
+//  drawLines(img);
+//  namedWindow("Test", 1);
+//  while (true) {
+//    imshow("Test", img);
+//    waitKey(30);
+//  }
+//}
+//
       
 int main( int argc, char** argv ) {
 
@@ -69,7 +93,11 @@ int main( int argc, char** argv ) {
         std::cout<< " --(!) Error reading video" << argv[1] << std::endl;
         return -1;
     }
-
+    
+//    Mat img;
+//    vid >> img;
+//    testDrawLines(img);
+//
     namedWindow("Tracking", 1);
     namedWindow("Keypoints", 1);
 
