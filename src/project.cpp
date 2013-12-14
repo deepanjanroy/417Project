@@ -16,7 +16,7 @@ int findLine(Point2f &point) {
   for (int i=0; i < lines.size(); i++) {
     double dx = fabs(lines[i]->back().x - point.x);
     double dy = fabs(lines[i]->back().y - point.y);
-    if (dx < 20 && dy < 20)
+    if (dx < 1 && dy < 1)
       return i;
   }
   std::vector<Point2f> *new_line = new std::vector<Point2f>; 
@@ -99,7 +99,6 @@ int main( int argc, char** argv ) {
 //    testDrawLines(img);
 //
     namedWindow("Tracking", 1);
-    namedWindow("Keypoints", 1);
 
     std::vector<KeyPoint> points_prev, points_cur;
     Mat img_prev, img_cur;
@@ -136,7 +135,20 @@ int main( int argc, char** argv ) {
           }
         }
         
-        double thresh = (min_dist + max_dist) / 2;
+        double min_dist_geo = 10000, max_dist_geo = 0;
+        for (int i=0; i<matches.size(); i++) {
+          Point2f prev = points_prev[matches[i].trainIdx].pt;
+          Point2f cur = points_cur[matches[i].queryIdx].pt;
+          double dx = fabs(prev.x - cur.x);
+          double dy = fabs(prev.y - cur.y);
+          if (dx+dy < min_dist_geo) {
+            min_dist_geo = dx+dy;
+          } if (dx+dy > max_dist_geo) {
+            max_dist_geo = dx + dy;
+          }
+        }
+ 
+        //double thresh = (min_dist + max_dist) / 4;
 
         std::cout<< "min_dist: " << min_dist << std::endl;
        
@@ -146,8 +158,8 @@ int main( int argc, char** argv ) {
           Point2f cur = points_cur[matches[i].queryIdx].pt;
           double dx = fabs(prev.x - cur.x);
           double dy = fabs(prev.y - cur.y);
-          //matches[i].distance  <= thresh
-          if (dx + dy < 50) {
+          //matches[i].distance <= thresh 
+          if (dx+dy < (min_dist_geo + max_dist_geo) / 8) {
             good_matches.push_back(matches[i]);
           } else {
             std::cout << "distance was: " << matches[i].distance << std::endl;
@@ -157,12 +169,12 @@ int main( int argc, char** argv ) {
         std::vector<bool> indices_to_remove(lines.size(), true);
         for (int i=0; i < good_matches.size(); i++) {
 
-          Point2f old = points_prev[good_matches[i].queryIdx].pt;
+          Point2f old = points_prev[good_matches[i].trainIdx].pt;
           int line_index = findLine(old); //returns a new list if not found
           indices_to_remove[line_index] = false;
 
           std::vector<Point2f> *line = lines[line_index];
-          Point2f new_point = points_cur[good_matches[i].trainIdx].pt; // = 3
+          Point2f new_point = points_cur[good_matches[i].queryIdx].pt; // = 3
           line->push_back(new_point);
         }
 
@@ -182,20 +194,19 @@ int main( int argc, char** argv ) {
           std::cout<<std::endl;
         }
 
-        std::vector<KeyPoint> matching;
-        for (int i=0; i<matches.size(); i++) {
-          matching.push_back(points_cur[matches[i].trainIdx]);
-        }
+        //std::vector<KeyPoint> matching;
+        //for (int i=0; i<matches.size(); i++) {
+        //  matching.push_back(points_cur[matches[i].queryIdx]);
+        //}
 
-        Mat img_matching;
-        drawKeypoints(img_cur, matching, img_matching);
+        //Mat img_matching;
+        //drawKeypoints(img_cur, matching, img_matching);
 
         drawLines(img_cur);
         drawKeypoints(img_cur, points_cur, img_cur);
         //Mat out_img;
         //drawMatches(img_prev, points_prev, img_cur, points_cur, good_matches, out_img);
         imshow("Tracking", img_cur);
-        imshow("Keypoints", img_matching);
         if (waitKey(30) >= 0) break;
       }
 
