@@ -152,6 +152,7 @@ int main( int argc, char** argv ) {
 
         std::cout<< "min_dist: " << min_dist << std::endl;
        
+        //pick the good matches
         std::vector<DMatch> good_matches;
         for (int i=0; i < matches.size(); i++) {
           Point2f prev = points_prev[matches[i].trainIdx].pt;
@@ -159,13 +160,16 @@ int main( int argc, char** argv ) {
           double dx = fabs(prev.x - cur.x);
           double dy = fabs(prev.y - cur.y);
           //matches[i].distance <= thresh 
-          if (dx+dy < (min_dist_geo + max_dist_geo) / 8) {
+          if (dx+dy < 35) {
             good_matches.push_back(matches[i]);
+            line(img_cur, prev, cur, CV_RGB(0, 0, 0));
+            std::cout<<"match "<<i<<": ("<<prev.x<<","<<prev.y<<")"<<"->("<<cur.x<<","<<cur.y<<")"<<std::endl;
           } else {
-            std::cout << "distance was: " << matches[i].distance << std::endl;
+            std::cout<<"match "<<i<<"failed: ("<<prev.x<<","<<prev.y<<")"<<"->("<<cur.x<<","<<cur.y<<")"<<std::endl;
           }
         }
 
+        //put our matches in Lines
         std::vector<bool> indices_to_remove(lines.size(), true);
         for (int i=0; i < good_matches.size(); i++) {
 
@@ -185,6 +189,7 @@ int main( int argc, char** argv ) {
        //   }
        // }
 
+        //debugging for Lines
         for (int i=0; i < lines.size(); i++) {
           std::vector<Point2f> *line = lines[i];
           std::cout << "Line " << i << " size: " << lines[i]->size() <<" ";
@@ -204,10 +209,9 @@ int main( int argc, char** argv ) {
 
         drawLines(img_cur);
         drawKeypoints(img_cur, points_cur, img_cur);
-        //Mat out_img;
-        //drawMatches(img_prev, points_prev, img_cur, points_cur, good_matches, out_img);
+        Mat out_img;
         imshow("Tracking", img_cur);
-        if (waitKey(30) >= 0) break;
+        waitKey(1);
       }
 
       points_prev = points_cur;
