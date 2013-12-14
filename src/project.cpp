@@ -20,6 +20,7 @@ int findLine(Point2f &point) {
       return i;
   }
   std::vector<Point2f> *new_line = new std::vector<Point2f>; 
+
   new_line->push_back(point);
   lines.push_back(new_line);
   return lines.size() - 1;
@@ -32,7 +33,6 @@ void drawLines(Mat &img) {
       Point2f prev = (*line_cur)[i-1];
       Point2f cur = (*line_cur)[i];
       line(img, prev, cur, CV_RGB(0, 0, 0));
-      std::cout<< "drew line from (" << prev.x<<","<<prev.y<<") to (" <<cur.x<< "," <<cur.y<<")"<<std::endl;
     }
   }
 }
@@ -59,32 +59,7 @@ void removeDuplicates(std::vector<DMatch> &matches) {
     }
   }
 }
-
-//void testDrawLines(Mat &img) {
-//  std::vector<Point2f> *line1 = new std::vector<Point2f>;
-//  std::vector<Point2f> *line2 = new std::vector<Point2f>;
-//  std::vector<Point2f> *line3 = new std::vector<Point2f>;
-//  std::vector<Point2f> *line4 = new std::vector<Point2f>;
-//  for (int i=0; i<50; i++) {
-//    Point2f point1(i*5, i*5);
-//    line1->push_back(point1);
-//    Point2f point2(200 - i, 200 - (2*i));
-//    line2->push_back(point2);
-//    Point2f point3(50 + i, 200 - i);
-//    line3->push_back(point3);
-//  }
-//  lines.push_back(line1);
-//  lines.push_back(line2);
-//  lines.push_back(line3);
-//  drawLines(img);
-//  namedWindow("Test", 1);
-//  while (true) {
-//    imshow("Test", img);
-//    waitKey(30);
-//  }
-//}
-//
-      
+ 
 int main( int argc, char** argv ) {
 
     VideoCapture vid(argv[1]);
@@ -94,10 +69,6 @@ int main( int argc, char** argv ) {
         return -1;
     }
     
-//    Mat img;
-//    vid >> img;
-//    testDrawLines(img);
-//
     namedWindow("Tracking", 1);
 
     std::vector<KeyPoint> points_prev, points_cur;
@@ -148,8 +119,6 @@ int main( int argc, char** argv ) {
           }
         }
  
-        //double thresh = (min_dist + max_dist) / 4;
-
         std::cout<< "min_dist: " << min_dist << std::endl;
        
         //pick the good matches
@@ -159,7 +128,6 @@ int main( int argc, char** argv ) {
           Point2f cur = points_cur[matches[i].queryIdx].pt;
           double dx = fabs(prev.x - cur.x);
           double dy = fabs(prev.y - cur.y);
-          //matches[i].distance <= thresh 
           if (dx+dy < 35) {
             good_matches.push_back(matches[i]);
             line(img_cur, prev, cur, CV_RGB(0, 0, 0));
@@ -199,19 +167,11 @@ int main( int argc, char** argv ) {
           std::cout<<std::endl;
         }
 
-        //std::vector<KeyPoint> matching;
-        //for (int i=0; i<matches.size(); i++) {
-        //  matching.push_back(points_cur[matches[i].queryIdx]);
-        //}
-
-        //Mat img_matching;
-        //drawKeypoints(img_cur, matching, img_matching);
-
-        drawLines(img_cur);
-        drawKeypoints(img_cur, points_cur, img_cur);
-        Mat out_img;
-        imshow("Tracking", img_cur);
-        waitKey(1);
+         Mat im_show = img_cur.clone();
+         drawLines(im_show);
+         drawKeypoints(img_cur, points_cur, im_show);
+         imshow("Tracking", im_show);
+         waitKey(1);
       }
 
       points_prev = points_cur;
