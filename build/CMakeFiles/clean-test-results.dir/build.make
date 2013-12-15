@@ -31,11 +31,14 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
+# The program to use to edit the cache.
+CMAKE_EDIT_COMMAND = /usr/bin/ccmake
+
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /media/sf_comp417/project
+CMAKE_SOURCE_DIR = /home/2012/droy30/fuerte_workspace/project
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /media/sf_comp417/project/build
+CMAKE_BINARY_DIR = /home/2012/droy30/fuerte_workspace/project/build
 
 # Utility rule file for clean-test-results.
 
@@ -43,7 +46,7 @@ CMAKE_BINARY_DIR = /media/sf_comp417/project/build
 include CMakeFiles/clean-test-results.dir/progress.make
 
 CMakeFiles/clean-test-results:
-	if ! rm -rf /home/sam/.ros/test_results/project; then echo WARNING:\ failed\ to\ remove\ test-results\ directory ; fi
+	if ! rm -rf /home/2012/droy30/.ros/test_results/project; then echo WARNING:\ failed\ to\ remove\ test-results\ directory ; fi
 
 clean-test-results: CMakeFiles/clean-test-results
 clean-test-results: CMakeFiles/clean-test-results.dir/build.make
@@ -58,6 +61,6 @@ CMakeFiles/clean-test-results.dir/clean:
 .PHONY : CMakeFiles/clean-test-results.dir/clean
 
 CMakeFiles/clean-test-results.dir/depend:
-	cd /media/sf_comp417/project/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /media/sf_comp417/project /media/sf_comp417/project /media/sf_comp417/project/build /media/sf_comp417/project/build /media/sf_comp417/project/build/CMakeFiles/clean-test-results.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/2012/droy30/fuerte_workspace/project/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/2012/droy30/fuerte_workspace/project /home/2012/droy30/fuerte_workspace/project /home/2012/droy30/fuerte_workspace/project/build /home/2012/droy30/fuerte_workspace/project/build /home/2012/droy30/fuerte_workspace/project/build/CMakeFiles/clean-test-results.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/clean-test-results.dir/depend
 

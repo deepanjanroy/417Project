@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/media/sf_comp417/project/src/project.cpp
+/home/2012/droy30/fuerte_workspace/project/src/project.cpp
 iostream
 -
 string
