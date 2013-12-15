@@ -17,7 +17,7 @@ std::vector<Point2f> *line_ptr;
 std::vector<bool> indices_to_remove;
 Ptr<FeatureDetector> detector;
 Ptr<DescriptorExtractor> extractor;
-double metric_the_double = 0.0;
+double metric = 0.0;
 int numFrames = 0;
 
 int findLine(Point2f &point) {
@@ -27,7 +27,7 @@ int findLine(Point2f &point) {
     if (dx < 1 && dy < 1)
       return i;
   }
-  std::vector<Point2f> *new_line = new std::vector<Point2f>; 
+  std::vector<Point2f> *new_line = new std::vector<Point2f>;
 
   new_line->push_back(point);
   lines.push_back(new_line);
@@ -49,11 +49,13 @@ void drawLines(Mat &img) {
 
 double calculateMetric() {
   double retVal = 0;
-  for (int i=0; i < lines.size(); i++) {
+  int i=0;
+  while(i < lines.size()){
     std::vector<Point2f> *line_cur = lines[i];
     retVal += line_cur->size();
+    i++;
   }
-  retVal = retVal / lines.size();
+  if (lines.size() > 0) retVal = retVal / lines.size();
   return retVal;
 }
 
@@ -81,22 +83,21 @@ void removeDuplicates(std::vector<DMatch> &matches) {
 }
 
 int main( int argc, char** argv ) {
-    std::cout << "Metric at beginning: " << metric_the_double << std::endl;
     VideoCapture vid(argv[1]);
     // Load images
     if( !vid.isOpened()) {
         std::cout<< " --(!) Error reading video" << argv[1] << std::endl;
         return -1;
     }
-    
+
     detector = FeatureDetector::create(argv[2]);
     extractor = DescriptorExtractor::create(argv[3]);
-    
+
     namedWindow("Tracking", 1);
 
     std::vector<KeyPoint> points_prev, points_cur;
     Mat img_prev, img_cur;
-    
+
     SurfDescriptorExtractor extractordfsfdsf; //WE DON"T KNOW WHAT THIS DOES BUT IT SEGFAULTS WITHOUT IT D:
     Mat descriptor_prev, descriptor_cur;
 
@@ -107,14 +108,16 @@ int main( int argc, char** argv ) {
     int min_dist = 100;
 
     for(;;) {
-      
       //grab a video frame
       if ( !vid.read(img_cur)) break;
+
 
       detector->detect(img_cur, points_cur);
       extractor->compute(img_cur, points_cur, descriptor_cur);
 
       if (points_prev.size() > 1) {
+
+
         matcher.match(descriptor_prev, descriptor_cur, matches);
 
         //pick the good matches
@@ -139,7 +142,7 @@ int main( int argc, char** argv ) {
           Point2f old = points_prev[good_matches[i].trainIdx].pt;
           int line_index = findLine(old); //returns a new list if not found
 
-          
+
           indices_to_remove[line_index] = false;
 
           line_ptr = lines[line_index];
@@ -159,18 +162,19 @@ int main( int argc, char** argv ) {
        //  drawKeypoints(im_show, points_cur, im_show);
          imshow("Tracking", im_show);
          double metric_ret = calculateMetric();
-         std::cout<<metric_ret<<std::endl;
-         std::cout<<metric_the_double<<std::endl;
-         metric_the_double += metric_ret;
+
+         metric += metric_ret;
          numFrames += 1;
          if (waitKey(3) > 0) break;
       }
 
-      metric_the_double /= numFrames;
+
 
       points_prev = points_cur;
       descriptor_prev = descriptor_cur;
       img_prev = img_cur;
     }
-    std::cout<<argv[2]<<","<<argv[3]<<","<<metric_the_double<<std::endl;
+
+    if (numFrames > 0) metric /= numFrames;
+    std::cout<<argv[2]<<","<<argv[3]<<", "<<metric<<std::endl;
 }
