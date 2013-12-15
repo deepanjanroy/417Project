@@ -11,6 +11,11 @@
 using namespace cv;
 
 std::vector<std::vector<Point2f> *> lines;
+Mat im_show;
+std::vector<DMatch> good_matches;
+std::vector<Point2f> *line_ptr;
+std::vector<bool> indices_to_remove;
+
 
 int findLine(Point2f &point) {
   for (int i=0; i < lines.size(); i++) {
@@ -23,6 +28,7 @@ int findLine(Point2f &point) {
 
   new_line->push_back(point);
   lines.push_back(new_line);
+  indices_to_remove.push_back(true);
   return lines.size() - 1;
 }
 
@@ -32,7 +38,7 @@ void drawLines(Mat &img) {
     for(int i=1; i < line_cur->size(); i++) {
       Point2f prev = (*line_cur)[i-1];
       Point2f cur = (*line_cur)[i];
-      line(img, prev, cur, CV_RGB(0, 0, 0));
+      line(img, prev, cur, CV_RGB(255, 255, 0));
     }
   }
 }
@@ -59,7 +65,7 @@ void removeDuplicates(std::vector<DMatch> &matches) {
     }
   }
 }
- 
+
 int main( int argc, char** argv ) {
 
     VideoCapture vid(argv[1]);
@@ -122,7 +128,7 @@ int main( int argc, char** argv ) {
         std::cout<< "min_dist: " << min_dist << std::endl;
        
         //pick the good matches
-        std::vector<DMatch> good_matches;
+        good_matches.clear();
         for (int i=0; i < matches.size(); i++) {
           Point2f prev = points_prev[matches[i].trainIdx].pt;
           Point2f cur = points_cur[matches[i].queryIdx].pt;
@@ -130,48 +136,55 @@ int main( int argc, char** argv ) {
           double dy = fabs(prev.y - cur.y);
           if (dx+dy < 35) {
             good_matches.push_back(matches[i]);
-            line(img_cur, prev, cur, CV_RGB(0, 0, 0));
             std::cout<<"match "<<i<<": ("<<prev.x<<","<<prev.y<<")"<<"->("<<cur.x<<","<<cur.y<<")"<<std::endl;
           } else {
             std::cout<<"match "<<i<<"failed: ("<<prev.x<<","<<prev.y<<")"<<"->("<<cur.x<<","<<cur.y<<")"<<std::endl;
           }
         }
 
-        //put our matches in Lines
-        std::vector<bool> indices_to_remove(lines.size(), true);
+        indices_to_remove.clear();
+        for (int j=0; j<lines.size(); j++) {
+          indices_to_remove.push_back(true);
+        }
+
         for (int i=0; i < good_matches.size(); i++) {
 
           Point2f old = points_prev[good_matches[i].trainIdx].pt;
           int line_index = findLine(old); //returns a new list if not found
+
+          
           indices_to_remove[line_index] = false;
 
-          std::vector<Point2f> *line = lines[line_index];
+          line_ptr = lines[line_index];
           Point2f new_point = points_cur[good_matches[i].queryIdx].pt; // = 3
-          line->push_back(new_point);
+          line_ptr->push_back(new_point);
         }
 
-       // for (int i=lines.size() -1; i >=0; i--) {
-       //   if (indices_to_remove[i]) {
-       //     delete lines[i];
-       //     lines.erase(lines.begin() + i);
-       //   }
-       // }
+        for (int i=lines.size() -1; i >=0; i--) {
+          if (indices_to_remove[i]) {
+            delete lines[i];
+            lines.erase(lines.begin() + i);
+          }
+        }
 
         //debugging for Lines
-        for (int i=0; i < lines.size(); i++) {
-          std::vector<Point2f> *line = lines[i];
-          std::cout << "Line " << i << " size: " << lines[i]->size() <<" ";
-          for (int i=0; i< line->size(); i++) {
-            std::cout << "(" << (*line)[i].x << "," << (*line)[i].y << ") ";
-          }
-          std::cout<<std::endl;
-        }
+       // for (int i=0; i < lines.size(); i++) {
+       //   std::vector<Point2f> *line = lines[i];
+       //   std::cout << "Line " << i << " size: " << lines[i]->size() <<" ";
+       //   for (int i=0; i< line->size(); i++) {
+       //     std::cout << "(" << (*line)[i].x << "," << (*line)[i].y << ") ";
+       //   }
+       //   std::cout<<std::endl;
+       // }
 
-         Mat im_show = img_cur.clone();
+         im_show = img_cur.clone();
          drawLines(im_show);
-         drawKeypoints(img_cur, points_cur, im_show);
+         drawKeypoints(im_show, points_cur, im_show);
          imshow("Tracking", im_show);
          waitKey(1);
+         if (lines.size() > 100) {
+           int i = 9;
+         }
       }
 
       points_prev = points_cur;
